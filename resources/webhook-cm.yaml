@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  properties.yaml: |
+    default
+    devteam
+kind: ConfigMap
+metadata:
+  name: webhook-cm

@@ -1,16 +1,26 @@
 # Kubernetes Validating Webhook
-This is a Kubernetes validating webhook written in Python using Flask.
+ This repo was forked from [k-mitevski/kubernetes-validating-webhook](https://github.com/k-mitevski/kubernetes-validating-webhook). I suggest this [great article](https://kmitevski.com/writing-a-kubernetes-validating-webhook-using-python/) for a newcomer on webhooks to get basic but valuable insight about writing a simple admission webhook. 
 
-I've written a blog post, and if you like you can [read more on the whole setup here.](https://kmitevski.com/writing-a-kubernetes-validating-webhook-using-python)
+ Even though we can limit the requested cpu using the [limitrange](https://kubernetes.io/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/#create-a-limitrange-and-a-pod) on the container level, I just wanted to do the same thing using the webhook.
 
-It works by intercepting Deployment creation, if there isn't a required label set, the request will be rejected.
-
-The required label is set through environment variable in the webhook deployment file.
+## How it works?
+When a deployment is triggered, the request is intercepted by the webhook and forwarded to the backend. The backend checks the CPU requests of each container of the deployment. To approve the deployment request, the requested CPU values should be less than the threshold value which is given from the [environment value of the webhook container](resources/webhook-deploy.yaml).
 
 ```
 env:
-- name: LABEL
-  value: development
+- name: cpu
+  value: "2"
 ```
-
-![webhook-image](https://i.imgur.com/igX0OWI.png)
+Threshold value can be given as core or milicores.
+```
+env:
+- name: cpu
+  value: "2500m"
+```
+Namespaces where our control logic is intended to be executed can be manipulated from the [configmap](resources/webhook-cm.yaml).
+```
+data:
+  properties.yaml: |
+    default
+    devteam
+```

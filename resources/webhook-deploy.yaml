@@ -16,18 +16,27 @@ spec:
     spec:
       containers:
       - name: webhook
-        image: kmitevski/webhook:gunicorn
+        image: ugurozturk99/custodes:${CI_PIPELINE_ID}
         ports:
         - containerPort: 443
         env:
-        - name: LABEL
-          value: development
+        - name: cpu
+          value: "2"
         volumeMounts:
+        - mountPath: "/app/properties.yaml"
+          name: config
+          subPath: "properties.yaml"
         - name: certs-volume
           readOnly: true
           mountPath: "/certs"
         imagePullPolicy: Always
       volumes:
+      - name: config
+        configMap:
+          name: webhook-cm
+          items:
+          - key: "properties.yaml"
+            path: "properties.yaml"
       - name: certs-volume
         secret:
           secretName: admission-tls
